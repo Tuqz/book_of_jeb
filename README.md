@@ -1,4 +1,4 @@
-book_of_jeb
+Book of Jeb
 ===========
 
-A kerbal space program mod for determining orbital resonances
+A kerbal space program mod for determining orbital resonance around the current bodys

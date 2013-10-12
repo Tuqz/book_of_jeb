@@ -5,16 +5,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "book_of_jeb", "book_of_jeb.
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BA13E9C0-DA03-4961-84B0-8F0E13B1222D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA13E9C0-DA03-4961-84B0-8F0E13B1222D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA13E9C0-DA03-4961-84B0-8F0E13B1222D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA13E9C0-DA03-4961-84B0-8F0E13B1222D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = book_of_jeb.csproj
+		outputpath = .
 	EndGlobalSection
 EndGlobal

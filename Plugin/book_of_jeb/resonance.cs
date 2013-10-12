@@ -27,6 +27,8 @@ namespace book_of_jeb
 		double geo_orbit_ap = 0;
 		double geo_orbit_pe = 0;
 		
+		double eccentricity = 0;
+		
 		bool started = true;
 		
 		int cmn_fctr(int x, int y) {
@@ -107,7 +109,6 @@ namespace book_of_jeb
 			GUILayout.EndHorizontal();
 			GUILayout.BeginVertical();
 			
-			double eccentricity = ((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0)/(this.vessel.orbit.PeA+((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0));
 			double desired_eccentricity = 0;
 			if(current_index == 10) {
 				desired_eccentricity = eccentricity;
@@ -115,7 +116,9 @@ namespace book_of_jeb
 				desired_eccentricity = Convert.ToDouble(eccentricities[current_index]);
 			}
 			
-			if(started == true || new_orbiting_body.name != orbiting_body.name || left || right) {
+			double cur_eccentricity = ((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0)/(this.vessel.orbit.PeA+((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0));
+			
+			if(started == true || new_orbiting_body.name != orbiting_body.name || left || right || Math.Abs(cur_eccentricity-eccentricity) > 0.05) {
 				grav_day = -(orbiting_body.gravParameter*(Math.Pow(orbiting_body.rotationPeriod, 2))/(4*Math.Pow(Math.PI, 2)));
 			
 				c = (desired_eccentricity * desired_eccentricity)-2*desired_eccentricity; //Following is from Cardano's formula for cubics, see http://www.proofwiki.org/wiki/Cardano%27s_Formula
@@ -129,6 +132,7 @@ namespace book_of_jeb
 				geo_orbit_pe = (S+T)-((S+T)*desired_eccentricity);
 				
 				orbiting_body = new_orbiting_body;
+				eccentricity = ((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0)/(this.vessel.orbit.PeA+((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0));
 			}
 			
 			if(geo_orbit_ap > orbiting_body.sphereOfInfluence || geo_orbit_pe < orbiting_body.Radius) {
@@ -138,7 +142,7 @@ namespace book_of_jeb
 				GUILayout.Label("1:1 orbit periapsis "+Math.Round((geo_orbit_pe-orbiting_body.Radius)/1000).ToString()+"km above 'sea level'");
 				GUILayout.Label("Current orbital apoapsis "+Math.Round(this.vessel.orbit.ApA/1000.0)+"km above 'sea level'");
 				GUILayout.Label("Current orbital periapsis "+Math.Round(this.vessel.orbit.PeA/1000.0) +"km above 'sea level'");
-				GUILayout.Label("Current orbital eccentricity "+((Math.Round(eccentricity*100))/100).ToString()+". Target eccentricity is "+(Math.Round(desired_eccentricity*100)/100).ToString());
+				GUILayout.Label("Current orbital eccentricity "+((Math.Round(eccentricity*100))/100).ToString());
 			}
 			GUILayout.EndVertical();
 			
