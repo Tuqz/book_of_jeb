@@ -1,8 +1,8 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Jebediahs_school_of_hard_maths/resonance.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="resonance.cs">
     <Files>
-      <File FileName="Jebediahs_school_of_hard_maths/resonance.cs" Line="5" Column="19" />
+      <File FileName="resonance.cs" Line="5" Column="19" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
