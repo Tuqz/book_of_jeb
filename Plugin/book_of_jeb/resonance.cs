@@ -12,7 +12,9 @@ namespace book_of_jeb
 		private static GUIStyle windowStyle = null;
 		private static Rect windowPosition = new Rect(0, 0, 320, 320);
 		string[] eccentricities = new string[11];
-		uint current_index = 0;
+		double[] harmonics = new double[7];
+		uint current_eccent_index = 0;
+		uint current_harm_index = 0;
 		CelestialBody orbiting_body;
 		
 		double grav_day = 0;
@@ -31,28 +33,35 @@ namespace book_of_jeb
 		
 		bool started = true;
 		
-		int cmn_fctr(int x, int y) {
-			int i = 1;
-			bool fctr_fnd = false;
-			while(!fctr_fnd && i < Math.Min(x, y)) {
-				i++;
-				if((x%i) == 0 && (y%i) == 0) {
-					fctr_fnd = true;
+		int[] ratio(double x, double y) {
+			int[] ratio = new int[2];
+			for(int i = 1; i < 10; i++) {
+				for(int j = 1; j < 10; j++) {
+					if(Math.Abs((x*i)-(y*j)) < 0.01) {
+						ratio[0] = i;
+						ratio[1] = j;
+						return ratio;
+					}
 				}
 			}
-			if(fctr_fnd) {
-				return i;
-			}
-			return 0;
+			ratio[0] = 0;
+			ratio[1] = 0;
+			return ratio;
 		}
 		
 		public override void OnStart(StartState state)
 		{
-			print ("The part has been loaded");
 			for(double i = 0; i <= 0.9; i += 0.1) {
 				eccentricities[Convert.ToInt32(i*10.0)] = i.ToString();
 			}
 			eccentricities[10] = "Current";
+			harmonics[0] = 3;
+			harmonics[1] = 2;
+			harmonics[2] = 1.5;
+			harmonics[3] = 1;
+			harmonics[4] = (2.0/3.0);
+			harmonics[5] = 0.5;
+			harmonics[6] = (1.0/3.0);
 		}
 		
 		[KSPEvent(guiActive = true, guiName = "Enable planet detector", active = true)]
@@ -60,14 +69,12 @@ namespace book_of_jeb
 		{
 			Enabled = true;
 			windowStyle = new GUIStyle(HighLogic.Skin.window);
-			print ("On");
 			orbiting_body = this.vessel.mainBody;
 		}
 		
 		[KSPEvent(guiActive = true, guiName = "Disable planet detector", active = false)]
 		public void Disable() {
 			Enabled = false;
-			print ("Off");
 		}
 		
 		public override void OnUpdate() {
@@ -88,38 +95,60 @@ namespace book_of_jeb
 			GUILayout.Label(orbiting_body.name);
 			GUILayout.EndVertical();
 			GUILayout.BeginHorizontal();
-			bool left = GUILayout.Button("<");
-			GUILayout.Label("Eccentricity: "+eccentricities[current_index]);
-			bool right = GUILayout.Button(">");
+			bool eccent_left = GUILayout.Button("<");
+			GUILayout.Label("Eccentricity: "+eccentricities[current_eccent_index]);
+			bool eccent_right = GUILayout.Button(">");
 			
-			if (left) {
-				if(current_index != 0) {
-					current_index--;
+			if (eccent_left) {
+				if(current_eccent_index != 0) {
+					current_eccent_index--;
 				} else {
-					current_index = 10;
+					current_eccent_index = 10;
 				}
 			}
-			if (right) {
-				if(current_index != 10) {
-					current_index++;
+			if (eccent_right) {
+				if(current_eccent_index != 10) {
+					current_eccent_index++;
 				} else {
-					current_index = 0;
+					current_eccent_index = 0;
+				}
+			}
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			bool harm_left = GUILayout.Button("<");
+			GUILayout.Label("Harmonic (days:orbit): "+ratio(harmonics[current_harm_index],1)[0].ToString()+":"+ratio(harmonics[current_harm_index], 1)[1].ToString());
+			bool harm_right = GUILayout.Button(">");
+			
+			if (harm_left) {
+				if(current_harm_index != 0) {
+					current_harm_index--;
+				} else {
+					current_harm_index = 6;
+				}
+			}
+			
+			if (harm_right) {
+				if(current_harm_index != 6) {
+					current_harm_index++;
+				} else {
+					current_harm_index = 0;
 				}
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.BeginVertical();
 			
 			double desired_eccentricity = 0;
-			if(current_index == 10) {
+			if(current_eccent_index == 10) {
 				desired_eccentricity = eccentricity;
 			} else {
-				desired_eccentricity = Convert.ToDouble(eccentricities[current_index]);
+				desired_eccentricity = Convert.ToDouble(eccentricities[current_eccent_index]);
 			}
 			
 			double cur_eccentricity = ((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0)/(this.vessel.orbit.PeA+((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0));
 			
-			if(started == true || new_orbiting_body.name != orbiting_body.name || left || right || Math.Abs(cur_eccentricity-eccentricity) > 0.05) {
-				grav_day = -(orbiting_body.gravParameter*(Math.Pow(orbiting_body.rotationPeriod, 2))/(4*Math.Pow(Math.PI, 2)));
+			if(started == true || new_orbiting_body.name != orbiting_body.name || eccent_left || eccent_right || harm_left || harm_right || Math.Abs(cur_eccentricity-eccentricity) > 0.05) {
+				double day = new_orbiting_body.rotationPeriod/harmonics[current_harm_index];
+				grav_day = -(new_orbiting_body.gravParameter*(Math.Pow(day, 2))/(4*Math.Pow(Math.PI, 2)));
 			
 				c = (desired_eccentricity * desired_eccentricity)-2*desired_eccentricity; //Following is from Cardano's formula for cubics, see http://www.proofwiki.org/wiki/Cardano%27s_Formula
 			
