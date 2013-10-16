@@ -12,9 +12,9 @@ namespace book_of_jeb
 		private static GUIStyle windowStyle = null;
 		private static Rect windowPosition = new Rect(0, 0, 320, 320);
 		string[] eccentricities = new string[11];
-		double[] harmonics = new double[7];
+		double[] resonances = new double[7];
 		uint current_eccent_index = 0;
-		uint current_harm_index = 0;
+		uint current_reson_index = 0;
 		CelestialBody orbiting_body;
 		
 		double grav_day = 0;
@@ -55,13 +55,13 @@ namespace book_of_jeb
 				eccentricities[Convert.ToInt32(i*10.0)] = i.ToString();
 			}
 			eccentricities[10] = "Current";
-			harmonics[0] = 3;
-			harmonics[1] = 2;
-			harmonics[2] = 1.5;
-			harmonics[3] = 1;
-			harmonics[4] = (2.0/3.0);
-			harmonics[5] = 0.5;
-			harmonics[6] = (1.0/3.0);
+			resonances[0] = 3;
+			resonances[1] = 2;
+			resonances[2] = 1.5;
+			resonances[3] = 1;
+			resonances[4] = (2.0/3.0);
+			resonances[5] = 0.5;
+			resonances[6] = (1.0/3.0);
 		}
 		
 		[KSPEvent(guiActive = true, guiName = "Enable planet detector", active = true)]
@@ -115,23 +115,23 @@ namespace book_of_jeb
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.BeginHorizontal();
-			bool harm_left = GUILayout.Button("<");
-			GUILayout.Label("Harmonic (days:orbit): "+ratio(harmonics[current_harm_index],1)[0].ToString()+":"+ratio(harmonics[current_harm_index], 1)[1].ToString());
-			bool harm_right = GUILayout.Button(">");
+			bool reson_left = GUILayout.Button("<");
+			GUILayout.Label("Resonance (days:orbit): "+ratio(resonances[current_reson_index],1)[0].ToString()+":"+ratio(resonances[current_reson_index], 1)[1].ToString());
+			bool reson_right = GUILayout.Button(">");
 			
-			if (harm_left) {
-				if(current_harm_index != 0) {
-					current_harm_index--;
+			if (reson_left) {
+				if(current_reson_index != 0) {
+					current_reson_index--;
 				} else {
-					current_harm_index = 6;
+					current_reson_index = 6;
 				}
 			}
 			
-			if (harm_right) {
-				if(current_harm_index != 6) {
-					current_harm_index++;
+			if (reson_right) {
+				if(current_reson_index != 6) {
+					current_reson_index++;
 				} else {
-					current_harm_index = 0;
+					current_reson_index = 0;
 				}
 			}
 			GUILayout.EndHorizontal();
@@ -146,8 +146,8 @@ namespace book_of_jeb
 			
 			double cur_eccentricity = ((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0)/(this.vessel.orbit.PeA+((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0));
 			
-			if(started == true || new_orbiting_body.name != orbiting_body.name || eccent_left || eccent_right || harm_left || harm_right || Math.Abs(cur_eccentricity-eccentricity) > 0.05) {
-				double day = new_orbiting_body.rotationPeriod/harmonics[current_harm_index];
+			if(started == true || new_orbiting_body.name != orbiting_body.name || eccent_left || eccent_right || reson_left || reson_right || Math.Abs(cur_eccentricity-eccentricity) > 0.05) {
+				double day = new_orbiting_body.rotationPeriod/resonances[current_reson_index];
 				grav_day = -(new_orbiting_body.gravParameter*(Math.Pow(day, 2))/(4*Math.Pow(Math.PI, 2)));
 			
 				c = (desired_eccentricity * desired_eccentricity)-2*desired_eccentricity; //Following is from Cardano's formula for cubics, see http://www.proofwiki.org/wiki/Cardano%27s_Formula
@@ -165,7 +165,7 @@ namespace book_of_jeb
 			}
 			
 			if(geo_orbit_ap > orbiting_body.sphereOfInfluence || geo_orbit_pe < orbiting_body.Radius) {
-				GUILayout.Label("1:1 orbit of this eccentricity unavailable above this body.");
+				GUILayout.Label("Orbit of this eccentricity and resonance unavailable above this body.");
 			} else {
 				GUILayout.Label("1:1 orbit apoapsis "+Math.Round((geo_orbit_ap-orbiting_body.Radius)/1000).ToString()+"km above 'sea level'");
 				GUILayout.Label("1:1 orbit periapsis "+Math.Round((geo_orbit_pe-orbiting_body.Radius)/1000).ToString()+"km above 'sea level'");
