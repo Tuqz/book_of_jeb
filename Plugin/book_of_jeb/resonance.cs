@@ -17,15 +17,6 @@ namespace book_of_jeb
 		uint current_reson_index = 0;
 		CelestialBody orbiting_body;
 		
-		double grav_day = 0;
-			
-		double c = 0;
-			
-		double R = 0;
-		double Q = 0;
-		
-		double S = 0;
-		double T = 0;
 		double geo_orbit_ap = 0;
 		double geo_orbit_pe = 0;
 		
@@ -128,11 +119,11 @@ namespace book_of_jeb
 			}
 			
 			if (reson_right) {
-				if(current_reson_index != 6) {
-					current_reson_index++;
-				} else {
-					current_reson_index = 0;
-				}
+			if(current_reson_index != 6) {
+				current_reson_index++;
+			} else {
+				current_reson_index = 0;
+			}
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.BeginVertical();
@@ -144,37 +135,29 @@ namespace book_of_jeb
 				desired_eccentricity = Convert.ToDouble(eccentricities[current_eccent_index]);
 			}
 			
-			double cur_eccentricity = ((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0)/(this.vessel.orbit.PeA+((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0));
+			double cur_eccentricity = this.vessel.orbit.eccentricity;
 			
 			if(started == true || new_orbiting_body.name != orbiting_body.name || eccent_left || eccent_right || reson_left || reson_right || Math.Abs(cur_eccentricity-eccentricity) > 0.05) {
-				double day = new_orbiting_body.rotationPeriod/resonances[current_reson_index];
-				grav_day = -(new_orbiting_body.gravParameter*(Math.Pow(day, 2))/(4*Math.Pow(Math.PI, 2)));
-			
-				c = (desired_eccentricity * desired_eccentricity)-2*desired_eccentricity; //Following is from Cardano's formula for cubics, see http://www.proofwiki.org/wiki/Cardano%27s_Formula
-			
-				R = (-grav_day)/2.0;
-				Q = c/3.0;
-		
-				S = Math.Pow(R + Math.Sqrt(Math.Pow(Q, 3)+Math.Pow(R, 2)), 1.0/3.0);
-				T = Math.Pow(R - Math.Sqrt(Math.Pow(Q, 3)+Math.Pow(R, 2)), 1.0/3.0);
-				geo_orbit_ap = (S+T)+((S+T)*desired_eccentricity);
-				geo_orbit_pe = (S+T)-((S+T)*desired_eccentricity);
+				double period = new_orbiting_body.rotationPeriod/resonances[current_reson_index];
+				double semimajor = Math.Pow((period*period*new_orbiting_body.gravParameter)/(4*Math.PI*Math.PI), 1.0/3.0);
+				geo_orbit_ap = semimajor*(1+desired_eccentricity);
+				geo_orbit_pe = semimajor*(1-desired_eccentricity);
 				
 				orbiting_body = new_orbiting_body;
-				eccentricity = ((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0)/(this.vessel.orbit.PeA+((this.vessel.orbit.ApA-this.vessel.orbit.PeA)/2.0));
+				eccentricity = cur_eccentricity;
 			}
-			
+		
 			if(geo_orbit_ap > orbiting_body.sphereOfInfluence || geo_orbit_pe < orbiting_body.Radius) {
-				GUILayout.Label("Orbit of this eccentricity and resonance unavailable above this body.");
+				GUILayout.Label("Orbit of this eccentricity and resonance is unavailable above this body.");				
 			} else {
-				GUILayout.Label("1:1 orbit apoapsis "+Math.Round((geo_orbit_ap-orbiting_body.Radius)/1000).ToString()+"km above 'sea level'");
-				GUILayout.Label("1:1 orbit periapsis "+Math.Round((geo_orbit_pe-orbiting_body.Radius)/1000).ToString()+"km above 'sea level'");
+				GUILayout.Label(ratio(resonances[current_reson_index],1)+" orbit apoapsis "+Math.Round((geo_orbit_ap-orbiting_body.Radius)/1000).ToString()+"km above 'sea level'");
+				GUILayout.Label(ratio(resonances[current_reson_index],1)+" orbit periapsis "+Math.Round((geo_orbit_pe-orbiting_body.Radius)/1000).ToString()+"km above 'sea level'");
 				GUILayout.Label("Current orbital apoapsis "+Math.Round(this.vessel.orbit.ApA/1000.0)+"km above 'sea level'");
 				GUILayout.Label("Current orbital periapsis "+Math.Round(this.vessel.orbit.PeA/1000.0) +"km above 'sea level'");
 				GUILayout.Label("Current orbital eccentricity "+((Math.Round(eccentricity*100))/100).ToString());
 			}
 			GUILayout.EndVertical();
-			
+		
 			GUILayout.BeginHorizontal();
 			Enabled = GUILayout.Toggle(Enabled, "On");
 			GUILayout.EndHorizontal();
@@ -183,4 +166,3 @@ namespace book_of_jeb
 		}
 	}
 }
-
